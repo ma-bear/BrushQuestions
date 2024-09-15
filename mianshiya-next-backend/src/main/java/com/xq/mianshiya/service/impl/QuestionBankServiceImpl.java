@@ -80,7 +80,7 @@ public class QuestionBankServiceImpl extends ServiceImpl<QuestionBankMapper, Que
         Long id = questionbankQueryRequest.getId();
         Long notId = questionbankQueryRequest.getNotId();
         String title = questionbankQueryRequest.getTitle();
-        String content = questionbankQueryRequest.getContent();
+        String content = questionbankQueryRequest.getDescription();
         String searchText = questionbankQueryRequest.getSearchText();
         String sortField = questionbankQueryRequest.getSortField();
         String sortOrder = questionbankQueryRequest.getSortOrder();

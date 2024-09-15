@@ -5,9 +5,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xq.mianshiya.model.dto.questionBankQuestion.QuestionBankQuestionQueryRequest;
 import com.xq.mianshiya.model.entity.QuestionBankQuestion;
+import com.xq.mianshiya.model.entity.User;
 import com.xq.mianshiya.model.vo.QuestionBankQuestionVO;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * 题库题目服务
@@ -20,34 +23,57 @@ public interface QuestionBankQuestionService extends IService<QuestionBankQuesti
     /**
      * 校验数据
      *
-     * @param questionbankquestion
+     * @param questionBankQuestion
      * @param add 对创建的数据进行校验
      */
-    void validQuestionBankQuestion(QuestionBankQuestion questionbankquestion, boolean add);
+    void validQuestionBankQuestion(QuestionBankQuestion questionBankQuestion, boolean add);
 
     /**
      * 获取查询条件
      *
-     * @param questionbankquestionQueryRequest
+     * @param questionBankQuestionQueryRequest
      * @return
      */
-    QueryWrapper<QuestionBankQuestion> getQueryWrapper(QuestionBankQuestionQueryRequest questionbankquestionQueryRequest);
+    QueryWrapper<QuestionBankQuestion> getQueryWrapper(QuestionBankQuestionQueryRequest questionBankQuestionQueryRequest);
     
     /**
      * 获取题库题目封装
      *
-     * @param questionbankquestion
+     * @param questionBankQuestion
      * @param request
      * @return
      */
-    QuestionBankQuestionVO getQuestionBankQuestionVO(QuestionBankQuestion questionbankquestion, HttpServletRequest request);
+    QuestionBankQuestionVO getQuestionBankQuestionVO(QuestionBankQuestion questionBankQuestion, HttpServletRequest request);
 
     /**
      * 分页获取题库题目封装
      *
-     * @param questionbankquestionPage
+     * @param questionBankQuestionPage
      * @param request
      * @return
      */
-    Page<QuestionBankQuestionVO> getQuestionBankQuestionVOPage(Page<QuestionBankQuestion> questionbankquestionPage, HttpServletRequest request);
+    Page<QuestionBankQuestionVO> getQuestionBankQuestionVOPage(Page<QuestionBankQuestion> questionBankQuestionPage, HttpServletRequest request);
+
+    /**
+     * 批量添加题目到题库
+     * @param questionIdList
+     * @param questionBankId
+     * @param loginUser
+     */
+    void batchAddQuestionsToBank(List<Long> questionIdList, long questionBankId, User loginUser);
+
+    /**
+     * 批量从题库移除题目
+     * @param questionIdList
+     * @param questionBankId
+     */
+    void batchRemoveQuestionsFromBank(List<Long> questionIdList, long questionBankId);
+
+    /**
+     * 批量添加题目到题库（事务，仅供内部调用）
+     *
+     * @param questionBankQuestions
+     */
+    @Transactional(rollbackFor = Exception.class)
+    void batchAddQuestionsToBankInner(List<QuestionBankQuestion> questionBankQuestions);
 }

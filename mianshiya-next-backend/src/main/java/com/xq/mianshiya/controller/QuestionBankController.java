@@ -18,6 +18,7 @@ import com.xq.mianshiya.model.entity.Question;
 import com.xq.mianshiya.model.entity.QuestionBank;
 import com.xq.mianshiya.model.entity.User;
 import com.xq.mianshiya.model.vo.QuestionBankVO;
+import com.xq.mianshiya.model.vo.QuestionVO;
 import com.xq.mianshiya.service.QuestionBankService;
 import com.xq.mianshiya.service.QuestionService;
 import com.xq.mianshiya.service.UserService;
@@ -154,8 +155,12 @@ public class QuestionBankController {
         if (needQueryQuestionList){
             QuestionQueryRequest questionQueryRequest = new QuestionQueryRequest();
             questionQueryRequest.setQuestionBankId(id);
+            // 可以按需支持更多的题目搜索参数，比如分页
+            questionQueryRequest.setPageSize(questionBankQueryRequest.getPageSize());
+            questionQueryRequest.setCurrent(questionBankQueryRequest.getCurrent());
             Page<Question> questionPage = questionService.listQuestionByPage(questionQueryRequest);
-            questionBankVO.setQuestionPage(questionPage);
+            Page<QuestionVO> questionVOPage = questionService.getQuestionVOPage(questionPage, request);
+            questionBankVO.setQuestionPage(questionVOPage);
         }
         // 获取封装类
         return ResultUtils.success(questionBankVO);
@@ -191,7 +196,7 @@ public class QuestionBankController {
         long current = questionbankQueryRequest.getCurrent();
         long size = questionbankQueryRequest.getPageSize();
         // 限制爬虫
-        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(size > 200, ErrorCode.PARAMS_ERROR);
         // 查询数据库
         Page<QuestionBank> questionbankPage = questionBankService.page(new Page<>(current, size),
                 questionBankService.getQueryWrapper(questionbankQueryRequest));

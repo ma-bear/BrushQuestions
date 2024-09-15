@@ -3,6 +3,7 @@ package com.xq.mianshiya.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xq.mianshiya.common.ErrorCode;
@@ -226,7 +227,7 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
     }
 
     /**
-     * 分页获取题目列表（仅管理员可用）
+     * 分页获取题目列表
      *
      * @param questionQueryRequest
      * @return
@@ -236,17 +237,25 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         long size = questionQueryRequest.getPageSize();
         // 题目表的查询条件
         QueryWrapper<Question> queryWrapper = this.getQueryWrapper(questionQueryRequest);
-        // 据题库查询题目列表接口
+        // 根据题库查询题目列表接口
         Long questionBankId = questionQueryRequest.getQuestionBankId();
-        LambdaQueryWrapper<QuestionBankQuestion> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.select(QuestionBankQuestion::getQuestionId)
-                .eq(QuestionBankQuestion::getQuestionBankId, questionBankId);
-        List<QuestionBankQuestion> questionList = questionBankQuestionService.list(lambdaQueryWrapper);
-        if (CollUtil.isNotEmpty(questionList)) {
-            //取出题目 id 集合
-            Set<Long> questionIdSet = questionList.stream().map(QuestionBankQuestion::getQuestionId).collect(Collectors.toSet());
-            //复用原有题目表的查询条件
-            queryWrapper.in("id", questionIdSet);
+        if (questionBankId != null) {
+            // 查询题库内的题目 id
+            LambdaQueryWrapper<QuestionBankQuestion> lambdaQueryWrapper = Wrappers.lambdaQuery(QuestionBankQuestion.class)
+                    .select(QuestionBankQuestion::getQuestionId)
+                    .eq(QuestionBankQuestion::getQuestionBankId, questionBankId);
+            List<QuestionBankQuestion> questionList = questionBankQuestionService.list(lambdaQueryWrapper);
+            if (CollUtil.isNotEmpty(questionList)) {
+                // 取出题目 id 集合
+                Set<Long> questionIdSet = questionList.stream()
+                        .map(QuestionBankQuestion::getQuestionId)
+                        .collect(Collectors.toSet());
+                // 复用原有题目表的查询条件
+                queryWrapper.in("id", questionIdSet);
+            } else {
+                // 题库为空，则返回空列表
+                return new Page<>(current, size, 0);
+            }
         }
         // 查询数据库
         Page<Question> questionPage = this.page(new Page<>(current, size), queryWrapper);

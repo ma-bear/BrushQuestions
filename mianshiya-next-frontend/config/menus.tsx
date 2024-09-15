@@ -1,6 +1,7 @@
 import { MenuDataItem } from "@ant-design/pro-layout";
 import { CrownOutlined } from "@ant-design/icons";
 import accessEnum from "@/access/accessEnum";
+import ACCESS_ENUM from "@/access/accessEnum";
 
 // 菜单列表
 export const menus = [
@@ -25,15 +26,26 @@ export const menus = [
         path: "/admin",
         name: "管理",
         icon: <CrownOutlined />,
-        access: accessEnum.ADMIN,
+        access: ACCESS_ENUM.ADMIN,
         children: [
             {
                 path: "/admin/user",
                 name: "用户管理",
-                access: accessEnum.ADMIN
+                access: ACCESS_ENUM.ADMIN,
+            },
+            {
+                path: "/admin/bank",
+                name: "题库管理",
+                access: ACCESS_ENUM.ADMIN,
+            },
+            {
+                path: "/admin/question",
+                name: "题目管理",
+                access: ACCESS_ENUM.ADMIN,
             }
         ],
     },
+
 ] as MenuDataItem[];
 
 // 根据路径查找所有菜单
