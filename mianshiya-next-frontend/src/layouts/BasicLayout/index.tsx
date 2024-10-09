@@ -82,26 +82,32 @@ export default function BasicLayout({children}: Props) {
                     title: loginUser.userName || "码熊",
                     render: (props, dom) => {
                         return loginUser.id ? (
-                                <Dropdown
-                                    menu={{
-                                        items: [
-                                            {
-                                                key: "logout",
-                                                icon: <LogoutOutlined />,
-                                                label: "退出登录",
-                                            },
-                                        ],
-                                        onClick: async (event: { key: React.Key }) => {
-                                            const { key } = event;
-                                            // 退出登录
-                                            if (key === "logout") {
-                                                userLogout();
-                                            }
+                            <Dropdown
+                                menu={{
+                                    items: [
+                                        {
+                                            key: "userCenter",
+                                            icon: <UserOutlined />,
+                                            label: "个人中心",
                                         },
-                                    }}
-                                >
-                                    {dom}
-                                </Dropdown>
+                                        {
+                                            key: "logout",
+                                            icon: <LogoutOutlined />,
+                                            label: "退出登录",
+                                        },
+                                    ],
+                                    onClick: async (event: { key: React.Key }) => {
+                                        const { key } = event;
+                                        if (key === "logout") {
+                                            userLogout();
+                                        } else if (key === "userCenter") {
+                                            router.push("/user/center");
+                                        }
+                                    },
+                                }}
+                            >
+                                {dom}
+                            </Dropdown>
                         ) : (
                         <div onClick={() => router.push("/user/login")}>{dom}</div>
                         );

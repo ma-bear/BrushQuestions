@@ -2,30 +2,19 @@ package com.xq.mianshiya.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xq.mianshiya.annotation.AuthCheck;
-import com.xq.mianshiya.common.DeleteRequest;
-import com.xq.mianshiya.constant.UserConstant;
 import com.xq.mianshiya.common.BaseResponse;
+import com.xq.mianshiya.common.DeleteRequest;
 import com.xq.mianshiya.common.ErrorCode;
 import com.xq.mianshiya.common.ResultUtils;
 import com.xq.mianshiya.config.WxOpenConfig;
+import com.xq.mianshiya.constant.UserConstant;
 import com.xq.mianshiya.exception.BusinessException;
 import com.xq.mianshiya.exception.ThrowUtils;
-import com.xq.mianshiya.model.dto.user.UserAddRequest;
-import com.xq.mianshiya.model.dto.user.UserLoginRequest;
-import com.xq.mianshiya.model.dto.user.UserQueryRequest;
-import com.xq.mianshiya.model.dto.user.UserRegisterRequest;
-import com.xq.mianshiya.model.dto.user.UserUpdateMyRequest;
-import com.xq.mianshiya.model.dto.user.UserUpdateRequest;
+import com.xq.mianshiya.model.dto.user.*;
 import com.xq.mianshiya.model.entity.User;
 import com.xq.mianshiya.model.vo.LoginUserVO;
 import com.xq.mianshiya.model.vo.UserVO;
 import com.xq.mianshiya.service.UserService;
-
-import java.util.List;
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
 import me.chanjar.weixin.common.bean.oauth2.WxOAuth2AccessToken;
@@ -33,20 +22,18 @@ import me.chanjar.weixin.mp.api.WxMpService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.DigestUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 import static com.xq.mianshiya.service.impl.UserServiceImpl.SALT;
 
 /**
  * 用户接口
  *
- * @author <a href="https://github.com/liyupi">程序员鱼皮</a>
- * @from <a href="https://yupi.icu">编程导航知识星球</a>
  */
 @RestController
 @RequestMapping("/user")
@@ -108,7 +95,7 @@ public class UserController {
      */
     @GetMapping("/login/wx_open")
     public BaseResponse<LoginUserVO> userLoginByWxOpen(HttpServletRequest request, HttpServletResponse response,
-            @RequestParam("code") String code) {
+                                                       @RequestParam("code") String code) {
         WxOAuth2AccessToken accessToken;
         try {
             WxMpService wxService = wxOpenConfig.getWxMpService();
@@ -208,7 +195,7 @@ public class UserController {
     @PostMapping("/update")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Boolean> updateUser(@RequestBody UserUpdateRequest userUpdateRequest,
-            HttpServletRequest request) {
+                                            HttpServletRequest request) {
         if (userUpdateRequest == null || userUpdateRequest.getId() == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -261,7 +248,7 @@ public class UserController {
     @PostMapping("/list/page")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Page<User>> listUserByPage(@RequestBody UserQueryRequest userQueryRequest,
-            HttpServletRequest request) {
+                                                   HttpServletRequest request) {
         long current = userQueryRequest.getCurrent();
         long size = userQueryRequest.getPageSize();
         Page<User> userPage = userService.page(new Page<>(current, size),
@@ -278,7 +265,7 @@ public class UserController {
      */
     @PostMapping("/list/page/vo")
     public BaseResponse<Page<UserVO>> listUserVOByPage(@RequestBody UserQueryRequest userQueryRequest,
-            HttpServletRequest request) {
+                                                       HttpServletRequest request) {
         if (userQueryRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -305,7 +292,7 @@ public class UserController {
      */
     @PostMapping("/update/my")
     public BaseResponse<Boolean> updateMyUser(@RequestBody UserUpdateMyRequest userUpdateMyRequest,
-            HttpServletRequest request) {
+                                              HttpServletRequest request) {
         if (userUpdateMyRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -316,5 +303,19 @@ public class UserController {
         boolean result = userService.updateById(user);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         return ResultUtils.success(true);
+    }
+
+    @PostMapping("/add/sign-in")
+    public BaseResponse<Boolean> addUserSignIn(HttpServletRequest httpServletRequest) {
+        User user = userService.getLoginUser(httpServletRequest);
+        boolean result = userService.addUserSignIn(user.getId());
+        return ResultUtils.success(result);
+    }
+
+    @PostMapping("/get/sign-in")
+    public BaseResponse<List<Integer>> getUserSignInRecord(HttpServletRequest httpServletRequest, Integer year) {
+        User user = userService.getLoginUser(httpServletRequest);
+        List<Integer> result = userService.getUserSignInRecord(user.getId(), year);
+        return ResultUtils.success(result);
     }
 }

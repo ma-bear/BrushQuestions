@@ -15,8 +15,6 @@ import java.util.List;
 /**
  * 用户服务
  *
- * @author <a href="https://github.com/liyupi">程序员鱼皮</a>
- * @from <a href="https://yupi.icu">编程导航知识星球</a>
  */
 public interface UserService extends IService<User> {
 
@@ -120,4 +118,19 @@ public interface UserService extends IService<User> {
      */
     QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest);
 
+    /**
+     * 添加用户签到记录
+     *
+     * @param userId
+     */
+    boolean addUserSignIn(Long userId);
+
+    /**
+     * 获取用户签到记录
+     *
+     * @param year
+     * @param userId
+     * @return
+     */
+    List<Integer> getUserSignInRecord(Long userId, Integer year);
 }

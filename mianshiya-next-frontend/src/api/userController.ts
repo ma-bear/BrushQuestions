@@ -14,6 +14,14 @@ export async function addUserUsingPost(body: API.UserAddRequest, options?: { [ke
   });
 }
 
+/** addUserSignIn POST /api/user/add/sign-in */
+export async function addUserSignInUsingPost(options?: { [key: string]: any }) {
+  return request<API.BaseResponseBoolean_>('/api/user/add/sign-in', {
+    method: 'POST',
+    ...(options || {}),
+  });
+}
+
 /** deleteUser POST /api/user/delete */
 export async function deleteUserUsingPost(
   body: API.DeleteRequest,
@@ -48,6 +56,21 @@ export async function getUserByIdUsingGet(
 export async function getLoginUserUsingGet(options?: { [key: string]: any }) {
   return request<API.BaseResponseLoginUserVO_>('/api/user/get/login', {
     method: 'GET',
+    ...(options || {}),
+  });
+}
+
+/** getUserSignInRecord POST /api/user/get/sign-in */
+export async function getUserSignInRecordUsingPost(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getUserSignInRecordUsingPOSTParams,
+  options?: { [key: string]: any },
+) {
+  return request<API.BaseResponseListInt_>('/api/user/get/sign-in', {
+    method: 'POST',
+    params: {
+      ...params,
+    },
     ...(options || {}),
   });
 }
