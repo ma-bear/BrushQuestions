@@ -196,6 +196,7 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
      * @param loginUser
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void batchAddQuestionsToBank(List<Long> questionIdList, long questionBankId, User loginUser) {
         // 参数校验
         ThrowUtils.throwIf(CollUtil.isEmpty(questionIdList), ErrorCode.PARAMS_ERROR, "题目列表不能为空");
@@ -259,7 +260,10 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
             // 异步处理每批数据，将任务添加到异步任务列表
             CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                 questionBankQuestionService.batchAddQuestionsToBankInner(questionBankQuestions);
-            }, customExecutor);
+            }, customExecutor).exceptionally(es -> {
+                log.error("批处理任务执行失败, 错误信息: {}", es.getMessage());
+                return null;
+            });
             futures.add(future);
         }
         // 等待所有批次完成操作

@@ -10,10 +10,7 @@ import com.xq.mianshiya.common.ResultUtils;
 import com.xq.mianshiya.constant.UserConstant;
 import com.xq.mianshiya.exception.BusinessException;
 import com.xq.mianshiya.exception.ThrowUtils;
-import com.xq.mianshiya.model.dto.question.QuestionAddRequest;
-import com.xq.mianshiya.model.dto.question.QuestionEditRequest;
-import com.xq.mianshiya.model.dto.question.QuestionQueryRequest;
-import com.xq.mianshiya.model.dto.question.QuestionUpdateRequest;
+import com.xq.mianshiya.model.dto.question.*;
 import com.xq.mianshiya.model.entity.Question;
 import com.xq.mianshiya.model.entity.User;
 import com.xq.mianshiya.model.vo.QuestionVO;
@@ -255,6 +252,15 @@ public class QuestionController {
         ThrowUtils.throwIf(size > 200, ErrorCode.PARAMS_ERROR);
         Page<Question> questionPage = questionService.searchFromEs(questionQueryRequest);
         return ResultUtils.success(questionService.getQuestionVOPage(questionPage, request));
+    }
+
+    @PostMapping("/delete/batch")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Boolean> batchDeleteQuestions(@RequestBody QuestionBatchDeleteRequest questionBatchDeleteRequest,
+                                                      HttpServletRequest request) {
+        ThrowUtils.throwIf(questionBatchDeleteRequest == null, ErrorCode.PARAMS_ERROR);
+        questionService.batchDeleteQuestions(questionBatchDeleteRequest.getQuestionIdList());
+        return ResultUtils.success(true);
     }
 
     // endregion

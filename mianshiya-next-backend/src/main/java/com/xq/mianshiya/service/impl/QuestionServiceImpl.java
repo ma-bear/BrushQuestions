@@ -8,8 +8,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xq.mianshiya.common.ErrorCode;
 import com.xq.mianshiya.constant.CommonConstant;
+import com.xq.mianshiya.exception.BusinessException;
 import com.xq.mianshiya.exception.ThrowUtils;
 import com.xq.mianshiya.mapper.QuestionMapper;
+import com.xq.mianshiya.model.dto.question.QuestionBatchDeleteRequest;
 import com.xq.mianshiya.model.dto.question.QuestionEsDTO;
 import com.xq.mianshiya.model.dto.question.QuestionQueryRequest;
 import com.xq.mianshiya.model.entity.Question;
@@ -37,6 +39,7 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -349,5 +352,24 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         return page;
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void batchDeleteQuestions(List<Long> questionIdList) {
+        if (CollUtil.isEmpty(questionIdList)) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "题目列表不能为空");
+        }
+        for (Long questionId : questionIdList) {
+            boolean res = this.removeById(questionId);
+            if (!res) {
+                throw new BusinessException(ErrorCode.OPERATION_ERROR, "删除失败");
+            }
 
+            // 删除题库题目关联
+            LambdaQueryWrapper<QuestionBankQuestion> lambdaQueryWrapper = Wrappers.lambdaQuery(QuestionBankQuestion.class);
+            lambdaQueryWrapper.eq(QuestionBankQuestion::getQuestionId, questionId);
+            boolean delete = questionBankQuestionService.remove(lambdaQueryWrapper);
+            if (!delete)
+                throw new BusinessException(ErrorCode.OPERATION_ERROR, "删除题库题目关联失败");
+        }
+    }
 }
