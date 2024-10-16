@@ -1,11 +1,11 @@
 package com.xq.mianshiya.controller;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeException;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.jd.platform.hotkey.client.callback.JdHotKeyStore;
-import com.xq.mianshiya.annotation.AuthCheck;
 import com.xq.mianshiya.common.BaseResponse;
 import com.xq.mianshiya.common.DeleteRequest;
 import com.xq.mianshiya.common.ErrorCode;

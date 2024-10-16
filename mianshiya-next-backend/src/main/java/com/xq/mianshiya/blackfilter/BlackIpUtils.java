@@ -16,7 +16,7 @@ import java.util.Map;
 @Slf4j
 public class BlackIpUtils {
 
-    private static BitMapBloomFilter bloomFilter;
+    private static BitMapBloomFilter bloomFilter = new BitMapBloomFilter(100);
 
     // 判断 IP 是否在黑名单中
     public static boolean isBlackIp(String ip) {
@@ -34,10 +34,10 @@ public class BlackIpUtils {
         Map map = yaml.loadAs(configInfo, Map.class);
         // 获取黑名单 IP 列表
         List<String> blackIpList = (List<String>) map.get("blackIpList");
-        // 加锁防止并发
+        // 加锁防止并发 958506
         synchronized (BlackIpUtils.class) {
             if (CollUtil.isNotEmpty(blackIpList)) {
-                BitMapBloomFilter bitMapBloomFilter = new BitMapBloomFilter(958506);
+                BitMapBloomFilter bitMapBloomFilter = new BitMapBloomFilter(1000);
                 for (String blackIp : blackIpList) {
                     bitMapBloomFilter.add(blackIp);
                 }

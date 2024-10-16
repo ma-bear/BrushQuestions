@@ -1,7 +1,7 @@
 package com.xq.mianshiya.controller;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.xq.mianshiya.annotation.AuthCheck;
 import com.xq.mianshiya.common.BaseResponse;
 import com.xq.mianshiya.common.DeleteRequest;
 import com.xq.mianshiya.common.ErrorCode;

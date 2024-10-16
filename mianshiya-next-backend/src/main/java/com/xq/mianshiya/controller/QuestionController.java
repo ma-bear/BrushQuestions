@@ -1,5 +1,7 @@
 package com.xq.mianshiya.controller;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
+import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
@@ -8,7 +10,6 @@ import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeException;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.xq.mianshiya.annotation.AuthCheck;
 import com.xq.mianshiya.common.BaseResponse;
 import com.xq.mianshiya.common.DeleteRequest;
 import com.xq.mianshiya.common.ErrorCode;
@@ -16,6 +17,7 @@ import com.xq.mianshiya.common.ResultUtils;
 import com.xq.mianshiya.constant.UserConstant;
 import com.xq.mianshiya.exception.BusinessException;
 import com.xq.mianshiya.exception.ThrowUtils;
+import com.xq.mianshiya.manager.CounterManager;
 import com.xq.mianshiya.model.dto.question.*;
 import com.xq.mianshiya.model.entity.Question;
 import com.xq.mianshiya.model.entity.User;
@@ -29,6 +31,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 题目接口
@@ -145,11 +148,36 @@ public class QuestionController {
     @GetMapping("/get/vo")
     public BaseResponse<QuestionVO> getQuestionVOById(long id, HttpServletRequest request) {
         ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
+        // 检测爬虫
+        crawlerDetect(userService.getLoginUser(request).getId());
         // 查询数据库
         Question question = questionService.getById(id);
         ThrowUtils.throwIf(question == null, ErrorCode.NOT_FOUND_ERROR);
         // 获取封装类
         return ResultUtils.success(questionService.getQuestionVO(question, request));
+    }
+
+    @Resource
+    private CounterManager counterManager;
+
+    // 检测爬虫
+    public void crawlerDetect(long loginUserId) {
+        final int WARN_COUNT = 10;
+        final int BAN_COUNT = 20;
+        String key = String.format("user:access:%s", loginUserId);
+        long count = counterManager.incrAndGetCounter(key, 1, TimeUnit.MINUTES, 180);
+        if (count > BAN_COUNT) {
+            StpUtil.kickout(loginUserId);
+            User user = new User();
+            user.setId(loginUserId);
+            user.setUserRole("ban");
+            userService.updateById(user);
+            throw new BusinessException(ErrorCode.BAN_ERROR, "检测到爬虫行为，已被封禁");
+        }
+
+        if (count == WARN_COUNT) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "检测到爬虫行为，请勿频繁访问");
+        }
     }
 
     /**
@@ -214,7 +242,7 @@ public class QuestionController {
             return ResultUtils.success(questionService.getQuestionVOPage(questionPage, request));
         } catch (BlockException e) {
             // 业务异常
-            if (!BlockException.isBlockException(e)){
+            if (!BlockException.isBlockException(e)) {
                 Tracer.trace(e);
                 return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "系统异常");
             }

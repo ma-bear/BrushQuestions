@@ -1,9 +1,9 @@
 package com.xq.mianshiya.controller;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.xq.mianshiya.annotation.AuthCheck;
 import com.xq.mianshiya.common.BaseResponse;
 import com.xq.mianshiya.common.ErrorCode;
 import com.xq.mianshiya.common.ResultUtils;

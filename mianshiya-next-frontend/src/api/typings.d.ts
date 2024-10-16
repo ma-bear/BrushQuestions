@@ -553,6 +553,10 @@ declare namespace API {
     userId?: number;
   };
 
+  type QuestionBatchDeleteRequest = {
+    questionIdList?: number[];
+  };
+
   type QuestionEditRequest = {
     answer?: string;
     content?: string;

@@ -3,6 +3,7 @@
 import CreateModal from "./components/CreateModal";
 import UpdateModal from "./components/UpdateModal";
 import {
+  batchDeleteQuestionsUsingPost,
   deleteQuestionUsingPost,
   listQuestionByPageUsingPost,
 } from "@/api/questionController";
